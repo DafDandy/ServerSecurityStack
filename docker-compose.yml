@@ -1,14 +1,14 @@
 include:
-  - homepage/docker-compose.yml # Dashboard for server home page
-  # SECURITY
-  - authentik/docker-compose.yml # Identity Access Management (IAM) + Authentication
-  - crowdsec/docker-compose.yml # IP Banning + Traffic Monitoring
-  - socket-proxy/docker-compose.yml # Security Enchanced Proxy for Docker Socket
-  - traefik/docker-compose.yml # Reverse Proxy
-  # MAINTENANCE
-  - diun/docker-compose.yml # Docker Image Update Notifier
-  # - portainer/docker-compose.yml # Container management
+  # - bind9/docker-compose.yml
+  - homepage/docker-compose.yml
+  - authentik/docker-compose.yml
+  - crowdsec/docker-compose.yml
+  - socket-proxy/docker-compose.yml
+  - traefik/docker-compose.yml
+  - diun/docker-compose.yml
+    # - portainer/docker-compose.yml # Container management
   # - watchtower/docker-compose.yml # Container auto-updator
+
 
 networks:
   crowdsec:

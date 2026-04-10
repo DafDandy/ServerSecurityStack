@@ -1,6 +1,7 @@
 api:
   dashboard: true
   insecure: true
+
 entryPoints:
   web:
     address: ":80"
@@ -20,21 +21,22 @@ providers:
     network: traefik
   file:
     filename: /config.yml
+
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: email@example.com # TODO: Replace with your email
+      email: ${LETSENCRYPT_EMAIL}
       storage: /etc/traefik/acme.json
-      tlsChallenge: {}
-  letsencrypt-staging:
-    acme:
-      email: email@example.com # TODO: Replace with your email
-      storage: /etc/traefik/acme-staging.json
-      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
-      tlsChallenge: {}
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+        delayBeforeCheck: 10
 
 log:
   level: "INFO"
   filePath: "/var/log/traefik/traefik.log"
   format: json
+
 accessLog: {}

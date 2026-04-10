@@ -1,5 +1,7 @@
 services:
   postgresql:
+    image: docker.io/library/postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${PG_DB}
       POSTGRES_PASSWORD: ${PG_PASS}
@@ -12,8 +14,6 @@ services:
         - CMD-SHELL
         - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
       timeout: 5s
-    image: docker.io/library/postgres:16-alpine
-    restart: unless-stopped
     volumes:
       - database:/var/lib/postgresql/data
     networks:
@@ -41,7 +41,12 @@ services:
       - traefik
 
   server:
+    image: ghcr.io/goauthentik/server:2026.2.2
+    restart: unless-stopped
     command: server
+    ports:
+      - "9000:9000"
+      - "9443:9443"
     depends_on:
       postgresql:
         condition: service_healthy
@@ -54,19 +59,6 @@ services:
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
-      # Uncomment and configure these for public internet exposure with mobile SSO
-      # AUTHENTIK_URL: https://auth.${DOMAIN}
-      # AUTHENTIK_EMAIL__HOST: ${EMAIL_HOST}
-      # AUTHENTIK_EMAIL__PORT: ${EMAIL_PORT}
-      # AUTHENTIK_EMAIL__USERNAME: ${EMAIL_USER}
-      # AUTHENTIK_EMAIL__PASSWORD: ${EMAIL_PASS}
-      # AUTHENTIK_EMAIL__USE_TLS: "true"
-      # AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
-    image: ghcr.io/goauthentik/server:2026.2.2
-    ports:
-      - "9000:9000"
-      - "9443:9443"
-    restart: unless-stopped
     shm_size: 512mb
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/-/health/live/"]
@@ -86,25 +78,26 @@ services:
       - "crowdsec.enable=true"
       - "crowdsec.labels.type=authentik"
       - "diun.enable=true"
-      - "homepage.group=Security"
-      - "homepage.name=Authentik"
-      - "homepage.icon=authentik.png"
-      - "homepage.href=https://auth.${DOMAIN}"
-      - "homepage.description=Authentication"
       - "traefik.enable=true"
       - "traefik.http.routers.authentik.entrypoints=websecure"
       - "traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN}`)"
       - "traefik.http.routers.authentik.tls=true"
       - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authentik.service=authentik"
       - "traefik.http.routers.authentik.middlewares=chain-no-auth@file"
-      # Uncomment for public internet exposure
-      # - "traefik.http.routers.authentik-public.entrypoints=websecure"
-      # - "traefik.http.routers.authentik-public.rule=Host(`auth.${PUBLIC_DOMAIN}`)"
-      # - "traefik.http.routers.authentik-public.tls=true"
-      # - "traefik.http.routers.authentik-public.tls.certresolver=letsencrypt"
-      # - "traefik.http.routers.authentik-public.middlewares=chain-secure-ip@file"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+      - "traefik.http.services.authentik.loadbalancer.server.scheme=http"
+      - "homepage.group=Security"
+      - "homepage.name=Authentik"
+      - "homepage.icon=authentik.png"
+      - "homepage.href=https://auth.${DOMAIN}"
+      - "homepage.description=Authentication"
+    security_opt:
+      - no-new-privileges:true
 
   worker:
+    image: ghcr.io/goauthentik/server:2026.2.2
+    restart: unless-stopped
     command: worker
     depends_on:
       postgresql:
@@ -118,16 +111,6 @@ services:
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
-      # Uncomment and configure these for public internet exposure
-      # AUTHENTIK_URL: https://auth.${DOMAIN}
-      # AUTHENTIK_EMAIL__HOST: ${EMAIL_HOST}
-      # AUTHENTIK_EMAIL__PORT: ${EMAIL_PORT}
-      # AUTHENTIK_EMAIL__USERNAME: ${EMAIL_USER}
-      # AUTHENTIK_EMAIL__PASSWORD: ${EMAIL_PASS}
-      # AUTHENTIK_EMAIL__USE_TLS: "true"
-      # AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
-    image: ghcr.io/goauthentik/server:2026.2.2
-    restart: unless-stopped
     shm_size: 512mb
     user: root
     volumes:
@@ -140,19 +123,11 @@ services:
       - diun
       - homepage
       - traefik
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   database:
     driver: local
   redis:
     driver: local
-
-networks:
-  crowdsec:
-    external: true
-  diun:
-    external: true
-  homepage:
-    external: true
-  traefik:
-    external: true

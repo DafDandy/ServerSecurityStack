@@ -1,5 +1,3 @@
-# Based on: https://github.com/gethomepage/homepage/discussions/3256
-
 services:
   homepage:
     container_name: homepage
@@ -48,8 +46,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.homepage.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.tls=true"
       - "traefik.http.routers.homepage.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.homepage.middlewares=chain-secure-ip@file"
+      - "traefik.http.routers.homepage.middlewares=chain-no-auth@file"
       - "traefik.http.services.homepage.loadbalancer.server.port=3000"
     security_opt:
       - no-new-privileges:true

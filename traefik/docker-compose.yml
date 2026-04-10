@@ -4,25 +4,25 @@ services:
     image: traefik:latest
     restart: unless-stopped
     ports:
-      # - 80:80
+      - 80:80
       - 443:443
-      # - 800:800 # Dashboard
+      - "8080:8080"
     environment:
       - TZ=${TZ}
+      - CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./traefik/traefik.yml:/traefik.yml:ro
-      - ./traefik/acme.json:/etc/traefik/acme.json
-      - ./traefik/acme-staging.json:/etc/traefik/acme-staging.json
-      - ./traefik/config.yml:/config.yml:ro
-      - ./traefik/logs:/var/log/traefik
+      - ./traefik.yml:/traefik.yml:ro
+      - ./acme.json:/etc/traefik/acme.json
+      - ./config.yml:/config.yml:ro
+      - ./logs:/var/log/traefik
     networks:
       crowdsec:
       diun:
       homepage:
       socket-proxy:
       traefik:
-        ipv4_address: 192.168.90.254 # Static IP
+        ipv4_address: 192.168.90.254
     depends_on:
       crowdsec:
         condition: service_started
@@ -34,6 +34,19 @@ services:
       - "crowdsec.enable=true"
       - "crowdsec.labels.type=traefik"
       - "diun.enable=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-dashboard.service=dashboard@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.traefik-api.entrypoints=websecure"
+      - "traefik.http.routers.traefik-api.rule=Host(`traefik.${DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.traefik-api.tls=true"
+      - "traefik.http.routers.traefik-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-api.service=api@internal"
+      - "traefik.http.routers.traefik-api.middlewares=chain-no-auth@file"
       - "homepage.group=Security"
       - "homepage.name=Traefik"
       - "homepage.icon=traefik.png"
@@ -41,13 +54,6 @@ services:
       - "homepage.description=Reverse proxy"
       - "homepage.widget.type=traefik"
       - "homepage.widget.url=http://traefik:8080"
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=chain-secure-ip@file"
     security_opt:
       - no-new-privileges:true
 

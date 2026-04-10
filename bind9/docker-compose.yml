@@ -1,0 +1,38 @@
+services:
+  bind9:
+    container_name: bind9
+    image: ubuntu/bind9:latest
+    restart: always
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./named.conf:/etc/bind/named.conf
+      - ./zones:/etc/bind/zones:ro
+      - ./etc:/etc/bind
+      - ./cache:/var/cache/bind
+      - ./lib:/var/lib/bind
+      - ./log:/var/log
+    networks:
+      - crowdsec
+      - diun
+      - homepage
+      - socket-proxy
+      - traefik
+    labels:
+      - "diun.enable=true"
+      - "homepage.group=Network"
+      - "homepage.name=Bind9 DNS"
+      - "homepage.icon=bind.png"
+      - "homepage.href=http://bind9"
+      - "homepage.description=Internal DNS Server"
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  cache:
+    driver: local
+  logs:
+    driver: local

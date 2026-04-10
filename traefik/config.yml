@@ -2,7 +2,7 @@ http:
   middlewares:
     authentik:
       forwardauth:
-        address: http://authentik:9443/api/verify?rd=https://auth.federationofdaf.com # TODO: Update to your domain
+        address: http://server:9000/api/verify?rd=https://auth.federationofdaf.com
         trustForwardHeader: true
         authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
     crowdsec-bouncer:
@@ -12,7 +12,7 @@ http:
     ip-whitelist:
       ipAllowList:
         sourceRange:
-          - 0.0.0.0/24 # TODO: Update to your desired IP Whitelist
+          - 0.0.0.0/24
     rate-limit:
       rateLimit:
         average: 100
@@ -29,15 +29,14 @@ http:
         stsSeconds: 63072000
         stsIncludeSubdomains: true
         stsPreload: true
-        # forceSTSHeader: true # This is a good thing but it can be tricky. Enable after everything works.
-        customFrameOptionsValue: SAMEORIGIN # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+        customFrameOptionsValue: SAMEORIGIN
         contentTypeNosniff: true
         browserXssFilter: true
         referrerPolicy: "same-origin"
         permissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), vr=()"
         customResponseHeaders:
-          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex," # disable search engines from indexing home server
-          server: "" # hide server info from visitors
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex,"
+          server: ""
     api-headers:
       headers:
         accessControlAllowMethods:
@@ -56,10 +55,10 @@ http:
         customFrameOptionsValue: SAMEORIGIN
         contentTypeNosniff: true
         browserXssFilter: true
-        referrerPolicy: "no-referrer" # for APIs, minimize referrer information
-        permissionsPolicy: "none" # APIs usually don’t need access to browser features
+        referrerPolicy: "no-referrer"
+        permissionsPolicy: "none"
         customResponseHeaders:
-          server: "" # hide server info from API responses
+          server: ""
     chain-secure:
       chain:
         middlewares:
@@ -67,7 +66,7 @@ http:
           - rate-limit
           - secure-headers
           - authentik
-    chain-secure-ip:  # This will require whitelisted IP addresses.
+    chain-secure-ip:
       chain:
         middlewares:
           - ip-whitelist
