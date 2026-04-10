@@ -8,7 +8,6 @@ services:
     environment:
       DOCKER_HOST: tcp://socket-proxy:2375
       GID: "${GID-1000}"
-      COLLECTIONS: "crowdsecurity/traefik LePresidente/authelia"
     volumes:
       - ./acquis.yml:/etc/crowdsec/acquis.yaml
       - ./db:/var/lib/crowdsec/data/

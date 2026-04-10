@@ -23,9 +23,9 @@ providers:
     filename: /config.yml
 
 certificatesResolvers:
-  letsencrypt:
+  cloudflare:
     acme:
-      email: ${LETSENCRYPT_EMAIL}
+      email: ${CLOUDFLARE_EMAIL}
       storage: /etc/traefik/acme.json
       dnsChallenge:
         provider: cloudflare

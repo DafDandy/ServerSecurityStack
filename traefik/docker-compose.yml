@@ -9,11 +9,13 @@ services:
       - "8080:8080"
     environment:
       - TZ=${TZ}
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
       - CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./traefik.yml:/traefik.yml:ro
       - ./acme.json:/etc/traefik/acme.json
+      - ./acme-staging.json:/etc/traefik/acme-staging.json
       - ./config.yml:/config.yml:ro
       - ./logs:/var/log/traefik
     networks:
@@ -38,13 +40,13 @@ services:
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN}`)"
       - "traefik.http.routers.traefik-dashboard.tls=true"
-      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik-dashboard.service=dashboard@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=chain-no-auth@file"
       - "traefik.http.routers.traefik-api.entrypoints=websecure"
       - "traefik.http.routers.traefik-api.rule=Host(`traefik.${DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.traefik-api.tls=true"
-      - "traefik.http.routers.traefik-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-api.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik-api.service=api@internal"
       - "traefik.http.routers.traefik-api.middlewares=chain-no-auth@file"
       - "homepage.group=Security"
@@ -56,15 +58,3 @@ services:
       - "homepage.widget.url=http://traefik:8080"
     security_opt:
       - no-new-privileges:true
-
-networks:
-  crowdsec:
-    external: true
-  diun:
-    external: true
-  homepage:
-    external: true
-  socket-proxy:
-    external: true
-  traefik:
-    external: true

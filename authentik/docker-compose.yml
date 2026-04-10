@@ -82,7 +82,7 @@ services:
       - "traefik.http.routers.authentik.entrypoints=websecure"
       - "traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN}`)"
       - "traefik.http.routers.authentik.tls=true"
-      - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authentik.tls.certresolver=cloudflare"
       - "traefik.http.routers.authentik.service=authentik"
       - "traefik.http.routers.authentik.middlewares=chain-no-auth@file"
       - "traefik.http.services.authentik.loadbalancer.server.port=9000"
