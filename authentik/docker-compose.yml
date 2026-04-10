@@ -1,0 +1,158 @@
+services:
+  postgresql:
+    environment:
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_USER: ${PG_USER}
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      timeout: 5s
+    image: docker.io/library/postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - crowdsec
+      - diun
+      - homepage
+      - traefik
+
+  redis:
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - redis:/data
+    networks:
+      - crowdsec
+      - diun
+      - homepage
+      - traefik
+
+  server:
+    command: server
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      # Uncomment and configure these for public internet exposure with mobile SSO
+      # AUTHENTIK_URL: https://auth.${DOMAIN}
+      # AUTHENTIK_EMAIL__HOST: ${EMAIL_HOST}
+      # AUTHENTIK_EMAIL__PORT: ${EMAIL_PORT}
+      # AUTHENTIK_EMAIL__USERNAME: ${EMAIL_USER}
+      # AUTHENTIK_EMAIL__PASSWORD: ${EMAIL_PASS}
+      # AUTHENTIK_EMAIL__USE_TLS: "true"
+      # AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
+    image: ghcr.io/goauthentik/server:2026.2.2
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    restart: unless-stopped
+    shm_size: 512mb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/-/health/live/"]
+      start_period: 30s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - ./data:/data
+      - ./custom-templates:/templates
+    networks:
+      - crowdsec
+      - diun
+      - homepage
+      - traefik
+    labels:
+      - "crowdsec.enable=true"
+      - "crowdsec.labels.type=authentik"
+      - "diun.enable=true"
+      - "homepage.group=Security"
+      - "homepage.name=Authentik"
+      - "homepage.icon=authentik.png"
+      - "homepage.href=https://auth.${DOMAIN}"
+      - "homepage.description=Authentication"
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik.entrypoints=websecure"
+      - "traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN}`)"
+      - "traefik.http.routers.authentik.tls=true"
+      - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authentik.middlewares=chain-no-auth@file"
+      # Uncomment for public internet exposure
+      # - "traefik.http.routers.authentik-public.entrypoints=websecure"
+      # - "traefik.http.routers.authentik-public.rule=Host(`auth.${PUBLIC_DOMAIN}`)"
+      # - "traefik.http.routers.authentik-public.tls=true"
+      # - "traefik.http.routers.authentik-public.tls.certresolver=letsencrypt"
+      # - "traefik.http.routers.authentik-public.middlewares=chain-secure-ip@file"
+
+  worker:
+    command: worker
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      # Uncomment and configure these for public internet exposure
+      # AUTHENTIK_URL: https://auth.${DOMAIN}
+      # AUTHENTIK_EMAIL__HOST: ${EMAIL_HOST}
+      # AUTHENTIK_EMAIL__PORT: ${EMAIL_PORT}
+      # AUTHENTIK_EMAIL__USERNAME: ${EMAIL_USER}
+      # AUTHENTIK_EMAIL__PASSWORD: ${EMAIL_PASS}
+      # AUTHENTIK_EMAIL__USE_TLS: "true"
+      # AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
+    image: ghcr.io/goauthentik/server:2026.2.2
+    restart: unless-stopped
+    shm_size: 512mb
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
+      - ./certs:/certs
+      - ./custom-templates:/templates
+    networks:
+      - crowdsec
+      - diun
+      - homepage
+      - traefik
+
+volumes:
+  database:
+    driver: local
+  redis:
+    driver: local
+
+networks:
+  crowdsec:
+    external: true
+  diun:
+    external: true
+  homepage:
+    external: true
+  traefik:
+    external: true

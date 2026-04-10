@@ -1,8 +1,8 @@
 http:
   middlewares:
-    authelia:
+    authentik:
       forwardauth:
-        address: http://authelia:9091/api/verify?rd=https://auth.example.com # TODO: Update to your domain
+        address: http://authentik:9443/api/verify?rd=https://auth.federationofdaf.com # TODO: Update to your domain
         trustForwardHeader: true
         authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
     crowdsec-bouncer:
@@ -66,7 +66,7 @@ http:
           - crowdsec-bouncer
           - rate-limit
           - secure-headers
-          - authelia
+          - authentik
     chain-secure-ip:  # This will require whitelisted IP addresses.
       chain:
         middlewares:
@@ -74,7 +74,7 @@ http:
           - crowdsec-bouncer
           - rate-limit
           - secure-headers
-          - authelia
+          - authentik
     chain-no-auth:
       chain:
         middlewares:
@@ -87,4 +87,4 @@ http:
           - crowdsec-bouncer
           - rate-limit
           - api-headers
-          - authelia
+          - authentik

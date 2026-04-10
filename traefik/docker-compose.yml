@@ -4,18 +4,18 @@ services:
     image: traefik:latest
     restart: unless-stopped
     ports:
-      - 80:80
+      # - 80:80
       - 443:443
-      - 8080:8080 # Dashboard
+      # - 800:800 # Dashboard
     environment:
       - TZ=${TZ}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./traefik.yml:/traefik.yml:ro
-      - ./acme.json:/etc/traefik/acme.json
-      - ./acme-staging.json:/etc/traefik/acme-staging.json
-      - ./config.yml:/config.yml:ro
-      - ./logs:/var/log/traefik
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - ./traefik/acme.json:/etc/traefik/acme.json
+      - ./traefik/acme-staging.json:/etc/traefik/acme-staging.json
+      - ./traefik/config.yml:/config.yml:ro
+      - ./traefik/logs:/var/log/traefik
     networks:
       crowdsec:
       diun:
@@ -28,7 +28,7 @@ services:
         condition: service_started
       bouncer-traefik:
         condition: service_healthy
-      authelia:
+      server:
         condition: service_healthy
     labels:
       - "crowdsec.enable=true"
@@ -50,3 +50,15 @@ services:
       - "traefik.http.routers.traefik.middlewares=chain-secure-ip@file"
     security_opt:
       - no-new-privileges:true
+
+networks:
+  crowdsec:
+    external: true
+  diun:
+    external: true
+  homepage:
+    external: true
+  socket-proxy:
+    external: true
+  traefik:
+    external: true

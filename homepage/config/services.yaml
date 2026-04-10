@@ -1,4 +1,115 @@
 ---
-# For configuration options and examples, please see:
-# https://gethomepage.dev/configs/services
+- Media Services:
+    - Audiobookshelf:
+        icon: audiobookshelf.png
+        href: {{HOMEPAGE_VAR_AUDIOBOOKSHELF_EXTERNAL_URL}}
+        widget:
+            type: audiobookshelf
+            url: {{HOMEPAGE_VAR_AUDIOBOOKSHELF_URL}}
+            key: {{HOMEPAGE_VAR_AUDIOBOOKSHELF_KEY}}
+            fields: ["books", "booksDuration"]
 
+    - Immich:
+        icon: immich.png
+        href: {{HOMEPAGE_VAR_IMMICH_EXTERNAL_URL}}
+        widget:
+            type: immich
+            url: {{HOMEPAGE_VAR_IMMICH_URL}}
+            key: {{HOMEPAGE_VAR_IMMICH_KEY}}
+            version: 2 # optional, default is 1
+            fields: ["users" ,"photos", "videos", "storage"]
+
+    - Jellyfin:
+        icon: jellyfin.png
+        href: {{HOMEPAGE_VAR_JELLYFIN_EXTERNAL_URL}}
+        widget:
+            type: jellyfin
+            url: {{HOMEPAGE_VAR_JELLYFIN_URL}}
+            key: {{HOMEPAGE_VAR_JELLYFIN_KEY}}
+            version: 2 # optional, default is 1
+            enableBlocks: true # optional, defaults to false
+            enableNowPlaying: true # optional, defaults to true
+            enableUser: true # optional, defaults to false
+            enableMediaControl: false # optional, defaults to true
+            showEpisodeNumber: true # optional, defaults to false
+            expandOneStreamToTwoRows: false # optional, defaults to true
+            fields: ["movies", "series", "episodes"]
+
+- Monitoring Service:
+    - Portainer:
+        icon: portainer.png
+        href: {{HOMEPAGE_VAR_PORTAINER_URL}}
+        widget:
+            type: portainer
+            url: {{HOMEPAGE_VAR_PORTAINER_URL}}
+            env: 3
+            kubernetes: false # optional, defaults to false
+            key: {{HOMEPAGE_VAR_PORTAINER_KEY}}
+
+    - Uptime Kuma:
+        icon: uptime-kuma.png
+        href: {{HOMEPAGE_VAR_UPTIME_KUMA_URL}}
+        widget:
+            type: uptimekuma
+            url: {{HOMEPAGE_VAR_UPTIME_KUMA_URL}}
+            slug: justanotherserver
+
+    - Unifi:
+        icon: unifi.png
+        href: {{HOMEPAGE_VAR_UNIFI_URL}}
+        widget:
+            type: unifi
+            url: {{HOMEPAGE_VAR_UNIFI_URL}}
+            username: {{HOMEPAGE_VAR_UNIFI_USER}}
+            password: {{HOMEPAGE_VAR_UNIFI_PASSWORD}}
+            key: {{HOMEPAGE_VAR_UNIFI_KEY}}
+
+
+    - Cloudflare:
+        icon: cloudflare.png
+        href: https://www.cloudflare.com/
+        # widget:
+        #     type: cloudflared
+        #     accountid: {{HOMEPAGE_VAR_CLOUDFLARE_ACCOUNTID}}
+        #     tunnelid: {{HOMEPAGE_VAR_CLOUDFLARE_TUNNELID}}
+        #     key: {{HOMEPAGE_VAR_CLOUDFLARE_KEY}}
+
+
+
+- Maker Sites:
+    - Octoprint:
+        icon: octoprint.png
+        href: {{HOMEPAGE_VAR_OCTOPRINT}}
+        # widget:
+        #     type: octoprint
+        #     url: {{HOMEPAGE_VAR_OCTOPRINT}}
+        #     key: {{HOMEPAGE_VAR_OCTOPRINT_KEY}}
+
+# - Privateering:
+#     - Qbittorrent:
+#         icon: qbittorrent.png
+#         href: {{HOMEPAGE_VAR_QBITTORRENT_URL}}
+#         widget:
+#             type: qbittorrent
+#             url: {{HOMEPAGE_VAR_QBITTORRENT_URL}}
+#             username: {{HOMEPAGE_VAR_QBITTORRENT_USER}}
+#             password: {{HOMEPAGE_VAR_QBITTORRENT_PASSWORD}}
+#             enableLeechProgress: true # optional, defaults to false
+#             enableLeechSize: true # optional, defaults to false
+#
+#     - Sonarr:
+#         icon: sonarr.png
+#         href: {{HOMEPAGE_VAR_SONARR_URL}}
+#         widget:
+#             type: sonarr
+#             url: {{HOMEPAGE_VAR_SONARR_URL}}
+#             key: {{HOMEPAGE_VAR_SONARR_KEY}}
+#             enableQueue: true # optional, defaults to false
+#
+#     - Prowlarr:
+#         icon: prowlarr.png
+#         href: {{HOMEPAGE_VAR_PROWLARR_URL}}
+#         widget:
+#             type: prowlarr
+#             url: {{HOMEPAGE_VAR_PROWLARR_URL}}
+#             key: {{HOMEPAGE_VAR_PROWLARR_KEY}}

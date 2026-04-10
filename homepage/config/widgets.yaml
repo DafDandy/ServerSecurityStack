@@ -16,12 +16,11 @@
     tempmin: 0
     tempmax: 80
     memory: true
+    disk: /
+    network: true
     uptime: true
 
-- resources:
-    label: Storage
-    disk: /
 
-- resources:
-    label: Network
-    network: true
+- search:
+    provider: duckduckgo
+    target: blank_
